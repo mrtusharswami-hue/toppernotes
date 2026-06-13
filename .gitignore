@@ -1,0 +1,17 @@
+google-credentials.json
+google-credentials.json.env
+# 🚨 SECURITY: NEVER UPLOAD CREDENTIALS TO GITHUB 🚨
+credentials.json
+token.json
+google-credentials.json
+.env
+
+# Python Cache & Virtual Environment
+__pycache__/
+venv/
+env/
+
+# Local Databases
+*.db
+*.sqlite3
+create_table.Py

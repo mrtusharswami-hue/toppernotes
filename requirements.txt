@@ -1,0 +1,9 @@
+Flask
+Werkzeug
+pypdf
+gunicorn
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+firebase-admin
+psycopg2-binary

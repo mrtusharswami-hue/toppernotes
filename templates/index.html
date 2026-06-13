@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="0UV6HMHv_nM7WIi5w7VbEcYSa7CPQ70MrI5hhOUdIWE" />
+    <meta name="description" content="RankUp Hub - Premium Free Study Material, TopperNotes, Class 12 CBSE Notes, JEE Advanced 2026." />
+    <meta name="keywords" content="RankUp Hub, TopperNotes, Class 12 CBSE Notes, JEE Advanced 2026, Free study material" />
+    <meta name="robots" content="index, follow" />
+    <title>RankUp Hub - Premium Study Material</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    
+    <!-- Header with Overlapping Search -->
+    <header>
+        <div class="header-content" style="align-items: center;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button id="hamburgerBtn" onclick="toggleHamburgerDrawer()" style="background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="logo-area" style="display: flex; flex-direction: column;">
+                    <a href="#" onclick="resetToHome(event)" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M12 16V8m-3 3l3-3 3 3" stroke="var(--primary-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M16 7l.64 1.3.1.2.22.03 1.44.2-1.04 1.01-.15.15.03.22.24 1.43-1.28-.68-.2-.11-.2.11-1.28.68.24-1.43.03-.22-.15-.15-1.04-1.01 1.44-.2.22-.03.1-.2L16 7z" fill="#ffcc00" />
+                        </svg>
+                        <div class="logo">RankUp Hub</div>
+                    </a>
+                    <div id="headerUserGreeting" style="font-size: 13px; color: var(--header-text); font-weight: 500; display: none;">Hi, <span id="userProfileName"></span></div>
+                </div>
+            </div>
+            
+            <nav style="display: flex; align-items: center; gap: 20px;">
+                <!-- Relocated Auth Container -->
+                <div id="headerAuthContainer" style="display: flex; align-items: center; gap: 10px;">
+                    <a id="googleLoginBtn" href="#" onclick="loginWithGoogle(event)" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: white; color: var(--primary-blue); border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="width: 14px; height: 14px;"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.61-.15-3.16-.42-4.69H24v8.87h12.66c-.54 2.85-2.16 5.27-4.57 6.88l7.1 5.51C43.35 36.46 46.5 30.76 46.5 24z"/><path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.1-5.51c-1.97 1.32-4.5 2.12-8.79 2.12-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                        Login
+                    </a>
+                    
+                    <div id="userProfile" style="display: none; align-items: center; gap: 10px; position: relative;">
+                        <div id="creditDisplay" class="credit-badge" style="font-size: 11px; padding: 2px 6px; margin: 0; box-shadow: none;">🪙 3 Pts</div>
+                        <img id="userProfilePic" src="" alt="Avatar" style="width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ffcc00; object-fit: cover; cursor: pointer;" onclick="toggleProfileDropdown(event)">
+                        
+                        <!-- Profile Dropdown -->
+                        <div id="profileDropdown" style="display: none; position: absolute; top: 45px; right: 0; background: var(--bg-gray); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 240px; z-index: 1000; overflow: hidden; opacity: 0; transform: translateY(-10px); transition: opacity 0.2s, transform 0.2s;">
+                            <div style="padding: 16px; border-bottom: 1px solid var(--border-color); text-align: center;">
+                                <img id="dropdownProfilePic" src="" alt="Avatar" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary-blue); margin-bottom: 10px; object-fit: cover;">
+                                <div id="dropdownProfileName" style="font-weight: bold; color: var(--text-dark); font-size: 14px;"></div>
+                                <div id="dropdownProfileEmail" style="color: var(--text-light); font-size: 12px; margin-top: 4px; word-break: break-all;"></div>
+                            </div>
+                            
+                            <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-color);">
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Theme</div>
+                                <div style="display: flex; gap: 4px; background: var(--glass-border); padding: 4px; border-radius: 8px;">
+                                    <button onclick="setTheme('light', event)" id="themeBtnLight" style="flex: 1; border: none; background: transparent; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-dark); transition: background 0.2s;">Light</button>
+                                    <button onclick="setTheme('dark', event)" id="themeBtnDark" style="flex: 1; border: none; background: transparent; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-dark); transition: background 0.2s;">Dark</button>
+                                    <button onclick="setTheme('system', event)" id="themeBtnSystem" style="flex: 1; border: none; background: transparent; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-dark); transition: background 0.2s;">Auto</button>
+                                </div>
+                            </div>
+                            
+                            <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-color);">
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">🏆 Top Contributors</div>
+                                <div id="leaderboardContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="font-size: 12px; color: var(--text-light); text-align: center;">Loading...</div>
+                                </div>
+                            </div>
+                            
+                            <div style="padding: 8px;">
+                                <button onclick="logout()" style="width: 100%; background: transparent; border: none; padding: 10px; text-align: left; color: var(--red-warning); font-weight: 600; font-size: 14px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,0,0,0.1)'" onmouseout="this.style.background='transparent'">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="search-wrapper">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search for chapters, notes, formulas...">
+                <button onclick="performSearch()">Search</button>
+            </div>
+            <!-- Header Upload Button -->
+            <button id="openUploadBtn" class="header-upload-btn" title="Upload Notes">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Widgets Section (Exam Countdown & Daily Targets) -->
+    <div class="widgets-container">
+        <!-- Interactive Exam Countdown Calculator -->
+        <div class="widget-card" id="countdownWidgetCard" style="transition: all 0.3s ease;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--glass-border);">
+                <h3 style="margin: 0; cursor: pointer; flex: 1; display: flex; align-items: center; gap: 8px; font-size: 1.1rem;" onclick="toggleCountdownMobile()">
+                    ⏳ <span id="examNameDisplay" style="font-weight: 700; color: var(--primary-blue);">Exam Countdown</span> 
+                    <span class="mobile-collapse-icon" style="display: none; font-size: 12px; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px;">▼</span>
+                </h3>
+                <button onclick="toggleExamEdit()" style="background: var(--primary-blue); border: none; cursor: pointer; color: white; font-size: 14px; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s;" title="Edit Exam Settings">
+                    ⚙️
+                </button>
+            </div>
+            
+            <div id="countdownContentArea" style="overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;">
+                <div id="examEditForm" style="display: none; flex-direction: column; gap: 12px; margin-bottom: 15px; background: var(--bg-gray); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--text-light);">Exam Name</label>
+                        <input type="text" id="examNameInput" placeholder="e.g., JEE Advanced" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--white); color: var(--text-dark); font-size: 14px; outline: none;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--text-light);">Target Date</label>
+                        <input type="date" id="examDateInput" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--white); color: var(--text-dark); font-size: 14px; outline: none; cursor: pointer;">
+                    </div>
+                    <button onclick="saveExamSettings()" style="background: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s; margin-top: 4px;">Save Configuration</button>
+                </div>
+
+                <div class="countdown-timer" id="countdown">
+                    <div class="time-box" style="flex: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><span id="days">00</span><small>Days</small></div>
+                    <div class="time-box" style="flex: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><span id="hours">00</span><small>Hours</small></div>
+                    <div class="time-box" style="flex: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><span id="minutes">00</span><small>Mins</small></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="scribd-layout">
+        
+        <!-- Hamburger Menu Overlay -->
+        <div class="drawer-overlay" id="drawerOverlay" onclick="toggleHamburgerDrawer()"></div>
+
+        <!-- Sidebar Navigation (Hamburger Drawer) & Login Card -->
+        <aside class="hamburger-drawer" id="hamburgerDrawer">
+            <button class="drawer-close-btn" onclick="toggleHamburgerDrawer()">&times;</button>
+            <div style="padding: 20px 20px 0 20px; font-weight: bold; color: var(--primary-blue); font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span id="sidebar-user-heading">Hi, Guest User</span>
+            </div>
+            
+            <div class="auth-card" style="display: none; margin: 0 20px;">
+<script>
+    // Securely fetch dynamic Firebase configuration from backend with retry loop for cold starts
+    async function initFirebaseWithRetry(retries = 5, delay = 2000) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch("/api/firebase-config");
+                if (!response.ok) throw new Error("Server responded with status " + response.status);
+                const configData = await response.json();
+                
+                if (!configData.apiKey || configData.apiKey.trim() === "") {
+                    throw new Error("Firebase configuration payload is empty. Environment variables might be missing on the server.");
+                }
+
+                // Explicitly map all fields exactly into the configuration constructor
+                const firebaseConfig = {
+                    apiKey: configData.apiKey,
+                    authDomain: configData.authDomain,
+                    projectId: configData.projectId,
+                    storageBucket: configData.storageBucket,
+                    messagingSenderId: configData.messagingSenderId,
+                    appId: configData.appId
+                };
+
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                window.auth = firebase.auth();
+                window.googleProvider = new firebase.auth.GoogleAuthProvider();
+                
+                // Decouple stats counter and immediately trigger it
+                // (Backend now handles visit_count natively via PostgreSQL)
+
+                window.auth.onAuthStateChanged(user => {
+                    const sidebarHeading = document.getElementById('sidebar-user-heading');
+                    if (user) {
+                        const nameEl = document.getElementById('profile-card-name');
+                        const emailEl = document.getElementById('profile-card-email');
+                        const picEl = document.getElementById('profile-card-pic');
+                        if (nameEl) nameEl.textContent = user.displayName || 'User';
+                        if (emailEl) emailEl.textContent = user.email || '';
+                        if (picEl) picEl.src = user.photoURL || '';
+
+                        const dropdownEmailEl = document.getElementById('dropdownProfileEmail');
+                        if (dropdownEmailEl) dropdownEmailEl.textContent = user.email || '';
+
+                        if (sidebarHeading) {
+                            const firstName = user.displayName ? user.displayName.split(' ')[0] : 'User';
+                            sidebarHeading.textContent = `Hi, ${firstName}`;
+                        }
+
+                        // Firestore check for uploads
+                        db.collection("study_materials").where("uploader_email", "==", user.email).onSnapshot(snap => {
+                            const uploadCountSpan = document.getElementById('user-upload-count');
+                            if (uploadCountSpan) {
+                                uploadCountSpan.textContent = snap.size;
+                            }
+                        }, err => console.error("Error counting user uploads:", err));
+                    } else {
+                        if (sidebarHeading) {
+                            sidebarHeading.textContent = 'Hi, Guest User';
+                        }
+                    }
+                });
+                
+                console.log("Firebase initialized successfully.");
+                return; // Exit loop on success
+            } catch (error) {
+                console.warn(`Firebase config fetch failed (attempt ${i + 1}/${retries}):`, error);
+                if (i < retries - 1) {
+                    await new Promise(res => setTimeout(res, delay));
+                } else {
+                    console.error("Error loading Firebase config after maximum retries. Application functionalities will be limited.");
+                }
+            }
+        }
+    }
+    
+    initFirebaseWithRetry();
+
+    function toggleProfileCard() {
+        const card = document.getElementById('profileDropdownCard');
+        if (card.style.display === 'none' || card.style.display === '') {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    }
+
+    async function fetchLeaderboard() {
+        const container = document.getElementById('leaderboardContainer');
+        if (!container) return;
+        try {
+            const res = await fetch('/api/leaderboard');
+            const data = await res.json();
+            if (data.length > 0) {
+                let html = '';
+                data.forEach((user, index) => {
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                    html += `
+                        <div style="display: flex; align-items: center; gap: 10px; background: var(--glass-border); padding: 6px 10px; border-radius: 8px;">
+                            <img src="${user.profile_pic || ''}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/24?text=U'">
+                            <div style="flex: 1; display: flex; flex-direction: column;">
+                                <span style="font-size: 12px; font-weight: bold; color: var(--text-dark);">${medal} ${user.username}</span>
+                            </div>
+                            <span style="font-size: 11px; font-weight: bold; color: var(--primary-blue);">${user.points} pts</span>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div style="font-size: 12px; color: var(--text-light); text-align: center;">No contributors yet!</div>';
+            }
+        } catch (err) {
+            console.error('Failed to fetch leaderboard:', err);
+            container.innerHTML = '<div style="font-size: 12px; color: var(--red-warning); text-align: center;">Failed to load leaderboard.</div>';
+        }
+    }
+
+    // Profile Dropdown Logic
+    function toggleProfileDropdown(e) {
+        if(e) e.stopPropagation();
+        const dropdown = document.getElementById('profileDropdown');
+        if (!dropdown) return;
+        if (dropdown.style.display === 'none' || dropdown.style.opacity === '0') {
+            dropdown.style.display = 'block';
+            fetchLeaderboard();
+            setTimeout(() => {
+                dropdown.style.opacity = '1';
+                dropdown.style.transform = 'translateY(0)';
+            }, 10);
+        } else {
+            dropdown.style.opacity = '0';
+            dropdown.style.transform = 'translateY(-10px)';
+            setTimeout(() => dropdown.style.display = 'none', 200);
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('profileDropdown');
+        const pic = document.getElementById('userProfilePic');
+        if (dropdown && pic && !dropdown.contains(e.target) && e.target !== pic) {
+            dropdown.style.opacity = '0';
+            dropdown.style.transform = 'translateY(-10px)';
+            setTimeout(() => dropdown.style.display = 'none', 200);
+        }
+    });
+
+    function syncAuthState() {
+        const storedName = localStorage.getItem('user_name');
+        const storedPic = localStorage.getItem('user_pic');
+        const userProfile = document.getElementById('userProfile');
+        const loginBtn = document.getElementById('googleLoginBtn');
+        
+        if (storedName && storedName !== 'null' && storedName !== 'undefined' && storedName.trim() !== '') {
+            document.getElementById('userProfileName').textContent = storedName;
+            const profilePicSrc = (storedPic && storedPic !== 'null' && storedPic !== 'undefined') ? storedPic : '';
+            document.getElementById('userProfilePic').src = profilePicSrc;
+            
+            const dropName = document.getElementById('dropdownProfileName');
+            const dropPic = document.getElementById('dropdownProfilePic');
+            if (dropName) dropName.textContent = storedName;
+            if (dropPic) dropPic.src = profilePicSrc;
+            
+            // Force state swap with ultimate priority override
+            userProfile.style.setProperty('display', 'flex', 'important');
+            loginBtn.style.setProperty('display', 'none', 'important');
+            const greeting = document.getElementById('headerUserGreeting');
+            if (greeting) greeting.style.display = 'block';
+        } else {
+            userProfile.style.setProperty('display', 'none', 'important');
+            loginBtn.style.setProperty('display', 'flex', 'important');
+            const greeting = document.getElementById('headerUserGreeting');
+            if (greeting) greeting.style.display = 'none';
+        }
+    }
+
+    async function loginWithGoogle(e) {
+        if (e) e.preventDefault();
+        
+        // Defensive check: Ensure global Firebase Auth instances are fully loaded
+        if (!window.auth || !window.googleProvider) {
+            console.warn("Firebase Auth Objects Uninitialized. The configuration fetch is still pending.");
+            alert("System is still connecting to authentication servers. Please wait a second and try again.");
+            return;
+        }
+
+        try {
+            const result = await window.auth.signInWithPopup(window.googleProvider);
+            const user = result.user;
+            
+            localStorage.setItem('user_name', user.displayName);
+            localStorage.setItem('user_pic', user.photoURL);
+            
+            syncAuthState();
+            
+            // Sync with backend SQLite
+            await fetch('/api/sync-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    name: user.displayName,
+                    profile_pic: user.photoURL
+                })
+            });
+            
+            // Refresh to restore server session state
+            window.location.reload(); 
+        } catch (error) {
+            console.error("Login failed:", error);
+            alert("Google Login Failed: " + error.message);
+        }
+    }
+
+    // Run instantly on DOM Load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', syncAuthState);
+    } else {
+        syncAuthState();
+    }
+
+    // Failsafe Interval check to catch delayed OAuth proxy headers
+    let checkCount = 0;
+    const authInterval = setInterval(() => {
+        syncAuthState();
+        checkCount++;
+        if (checkCount > 10) clearInterval(authInterval);
+    }, 300);
+
+    function logout() {
+        if (!window.auth) return;
+        window.auth.signOut().then(() => {
+            localStorage.removeItem('user_name');
+            localStorage.removeItem('user_pic');
+            window.location.replace('/');
+        }).catch(err => {
+            console.error("Logout error", err);
+            localStorage.removeItem('user_name');
+            localStorage.removeItem('user_pic');
+            window.location.replace('/');
+        });
+    }
+</script>
+            </div>
+
+            <div class="chapter-list">
+                <h3>Subjects</h3>
+                <!-- Search Input -->
+                <div style="position: relative; margin-bottom: 12px; margin-right: 20px; margin-left: 20px;">
+                    <input type="text" id="subjectSearchInput" placeholder="Search Subject..." style="width: 100%; padding: 8px 12px 8px 32px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-gray); color: var(--text-dark); font-size: 13px; outline: none; box-sizing: border-box;">
+                    <svg style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-light);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <ul id="mainSubjectList">
+                    <li class="subject-item" data-subject="All Notes"><a href="#" onclick="filterBySubject('', this)" class="subject-link active">All Notes</a></li>
+                    <li class="subject-item" data-subject="Physics"><a href="#" onclick="filterBySubject('Physics', this)" class="subject-link">Physics</a></li>
+                    <li class="subject-item" data-subject="Chemistry"><a href="#" onclick="filterBySubject('Chemistry', this)" class="subject-link">Chemistry</a></li>
+                    <li class="subject-item" data-subject="Mathematics"><a href="#" onclick="filterBySubject('Mathematics', this)" class="subject-link">Mathematics</a></li>
+                    <li class="subject-item" data-subject="Biology"><a href="#" onclick="filterBySubject('Biology', this)" class="subject-link">Biology</a></li>
+                </ul>
+                <div id="collapsibleSubjects" style="display: none; transition: max-height 0.3s ease;">
+                    <ul id="moreSubjectList">
+                        <li class="subject-item" data-subject="Cyber Security & Ethical Hacking"><a href="#" onclick="filterBySubject('Cyber Security & Ethical Hacking', this)" class="subject-link">Cyber Security & Ethical Hacking</a></li>
+                        <li class="subject-item" data-subject="Artificial Intelligence (AI)"><a href="#" onclick="filterBySubject('Artificial Intelligence (AI)', this)" class="subject-link">Artificial Intelligence (AI)</a></li>
+                        <li class="subject-item" data-subject="History"><a href="#" onclick="filterBySubject('History', this)" class="subject-link">History</a></li>
+                        <li class="subject-item" data-subject="Geography"><a href="#" onclick="filterBySubject('Geography', this)" class="subject-link">Geography</a></li>
+                        <li class="subject-item" data-subject="Polity"><a href="#" onclick="filterBySubject('Polity', this)" class="subject-link">Polity</a></li>
+                        <li class="subject-item" data-subject="Economics"><a href="#" onclick="filterBySubject('Economics', this)" class="subject-link">Economics</a></li>
+                        <li class="subject-item" data-subject="Reasoning"><a href="#" onclick="filterBySubject('Reasoning', this)" class="subject-link">Reasoning</a></li>
+                        <li class="subject-item" data-subject="Aptitude"><a href="#" onclick="filterBySubject('Aptitude', this)" class="subject-link">Aptitude</a></li>
+                        <li class="subject-item" data-subject="English"><a href="#" onclick="filterBySubject('English', this)" class="subject-link">English</a></li>
+                        <li class="subject-item" data-subject="Computer Science"><a href="#" onclick="filterBySubject('Computer Science', this)" class="subject-link">Computer Science</a></li>
+                    </ul>
+                </div>
+                <div style="padding: 0 20px;">
+                    <button id="toggleSubjectsBtn" onclick="toggleMoreSubjects()" style="background: transparent; border: none; color: var(--primary-blue); cursor: pointer; font-size: 13px; font-weight: bold; padding: 5px 0; display: flex; align-items: center; gap: 4px; transition: color 0.2s;">
+                        Show More <span style="font-size: 10px;">∨</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Today's Study Plan Advanced Daily Focus Targets (Moved to Drawer) -->
+            <div class="widget-card" style="margin: 0 0 20px 0; display: flex; flex-direction: column; background: var(--white); border-radius: 0; padding: 15px 0; box-shadow: none; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
+                <h3 style="padding: 0 20px 10px 20px; margin-bottom: 0; display: flex; align-items: center; gap: 8px; font-size: 1.1rem;">
+                    🎯 Today's Study Plan
+                </h3>
+                <ul class="target-list" id="daily-targets" style="max-height: 250px; overflow-y: auto; padding: 0; margin-bottom: 0; flex: 1; list-style: none;">
+                    <!-- Populated via JS -->
+                </ul>
+                <div class="add-target-container" style="display: flex; gap: 10px; margin: 15px 20px 0 20px; align-items: center; background: var(--bg-gray); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); flex-direction: column !important; align-items: stretch !important;">
+                    <div class="target-input-wrapper" style="display: flex; align-items: center; background: var(--white); border-radius: 6px; padding: 4px 10px; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box;">
+                        <span style="color: var(--text-light); font-size: 18px; margin-right: 8px;">+</span>
+                        <input type="text" id="newTaskName" placeholder="Add a target..." style="flex: 1; padding: 6px 0; border: none; background: transparent; color: var(--text-dark); outline: none; font-size: 14px; min-width: 100px;">
+                    </div>
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <div class="target-time-wrapper" style="display: flex; align-items: center; background: var(--white); border-radius: 6px; padding: 4px 8px; border: 1px solid var(--border-color); flex: 1; box-sizing: border-box;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-light); margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            <input type="number" id="newTaskHours" placeholder="Hrs" style="width: 100%; padding: 6px 0; border: none; background: transparent; color: var(--text-dark); outline: none; font-size: 14px;" min="0.5" step="0.5">
+                        </div>
+                        <button class="target-add-btn" onclick="addNewTarget()" style="background: var(--primary-blue); color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; white-space: nowrap; transition: background 0.2s, transform 0.1s; box-shadow: 0 2px 6px rgba(0,0,0,0.1); flex: 1;">Add</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Panel (Document Viewer & Upload) -->
+        <section class="content-panel">
+            
+            <div class="premium-hero-container" id="premiumHero">
+                <div class="hero-glass-card">
+                    <h1 class="hero-slogan">Education is the most powerful weapon which you can use to change the world.</h1>
+                    <p class="hero-vision">हमारा विज़न है हर छात्र तक फ्री, प्रीमियम और बेस्ट स्टडी मटेरियल पहुँचाना ताकि पैसों की कमी किसी की पढ़ाई में बाधा न बने। सब अच्छे से पढ़ें, रोज़ सीखें और आगे बढ़ें!</p>
+                    <ul class="hero-highlights">
+                        <li>✓ Class 12 CBSE & JEE Advanced Specific curated notes & formula sheets.</li>
+                        <li>✓ Built-in Smart Pomodoro Focus Clocks to optimize your late-night sittings.</li>
+                    </ul>
+                    <button id="megaAccessBtn" class="mega-access-btn" onclick="toggleHamburgerDrawer()">🚀 Access Free Notes</button>
+                    
+                    <div class="features-intro-box text-center my-4 p-3 rounded-3 shadow-sm" style="background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%); border-left: 5px solid #0284c7; max-width: 800px; margin: 25px auto;">
+                        <h4 class="fw-bold mb-1" style="color: #0369a1; font-size: 1.35rem; letter-spacing: 0.5px; margin-top: 0;">✨ Introduction of Our Premium Features</h4>
+                        <p class="text-muted mb-0 small" style="font-weight: 500; color: #555;">आपकी क्लास 12वीं और JEE Advanced तैयारी को सुपरचार्ज करने वाले नए एडवांस्ड टूल्स 🚀</p>
+                    </div>
+
+                    <div class="features-grid">
+                        <div class="feature-card" style="display: flex; flex-direction: column;">
+                            <h4>⏳ Custom Exam Countdown</h4>
+                            <p style="flex-grow: 1;">अपनी डेडिकेटेड स्टडी के लिए अपने टारगेट एग्जाम (जैसे CBSE 12th, JEE Adv, SSC GD) का लाइव टाइमर और कैलेंडर सेट करें जो हमेशा आपकी आँखों के सामने रहेगा।</p>
+                            <button onclick="document.getElementById('countdownWidgetCard').scrollIntoView({behavior: 'smooth'})" class="explore-feature-btn">Explore This Feature ➡️</button>
+                        </div>
+                        <div class="feature-card" style="display: flex; flex-direction: column;">
+                            <h4>🤖 Jarvis AI Prep Buddy</h4>
+                            <p style="flex-grow: 1;">आपका पर्सनल २४/७ एआई असिस्टेंट। पढ़ाई करते समय कोई भी डाउट आए, तो जार्विस से तुरंत पूछें और उसका समाधान पाएं।</p>
+                            <button onclick="toggleJarvis()" class="explore-feature-btn">Explore This Feature ➡️</button>
+                        </div>
+                        <div class="feature-card" style="display: flex; flex-direction: column;">
+                            <h4>🎧 Audio Reader System</h4>
+                            <p style="flex-grow: 1;">बिना आँखों पर ज़ोर दिए, स्क्रीन को देखते-देखते अपने भारी-भरकम नोट्स और चैप्टर्स को सीधे हिंदी और इंग्लिश ऑडियो के ज़रिए सुनें।</p>
+                            <button onclick="window.location.href='/audio-reader'" class="explore-feature-btn">Explore This Feature ➡️</button>
+                        </div>
+                        <div class="feature-card" style="display: flex; flex-direction: column;">
+                            <h4>⏱️ Today's Study Plan</h4>
+                            <p style="flex-grow: 1;">प्रत्येक सब्जेक्ट और टॉपिक के लिए लाइव प्ले/पॉज़ फोकस टाइमर, जो आपकी डेली सिटिंग कैपेसिटी को 100% बूस्ट करेगा।</p>
+                            <button onclick="toggleHamburgerDrawer()" class="explore-feature-btn">Explore This Feature ➡️</button>
+                        </div>
+                        <div class="feature-card" style="display: flex; flex-direction: column;">
+                            <h4>🌙 Smart Night Light Mode</h4>
+                            <p style="flex-grow: 1;">देर रात तक चलने वाली सीरियस स्टडी सेशन्स के लिए स्पेशल आई-प्रोटेक्टिव डार्क थीम, जो आपकी आँखों को थकान से बचाए।</p>
+                            <button onclick="toggleProfileDropdown(event)" class="explore-feature-btn">Explore This Feature ➡️</button>
+                        </div>
+                        <div class="feature-card" style="display: flex; flex-direction: column;">
+                            <h4>🎯 Upload & Earn System</h4>
+                            <p style="flex-grow: 1;">कम्युनिटी में अपने खुद के बेस्ट नोट्स योगदान/अपलोड करें, पॉइंट्स कमाएं और प्रीमियम लॉक्ड मटेरियल को हाथों-हाथ फ्री में एक्सेस करें।</p>
+                            <button onclick="document.getElementById('openUploadBtn').click()" class="explore-feature-btn">Explore This Feature ➡️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="search-results" style="display: none;"></div>
+
+        </section>
+    </main>
+
+    <!-- Professional Multi-Column Footer -->
+    <footer style="background-color: var(--bg-gray); border-top: 1px solid var(--glass-border); padding: 40px 20px 20px; margin-top: 40px; font-size: 14px; color: var(--text-dark);">
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; padding-bottom: 30px; border-bottom: 1px solid var(--border-color);">
+            <!-- Column 1: Quick Tools -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <h4 style="color: var(--primary-blue); font-weight: bold; margin-bottom: 10px; font-size: 15px;">Quick Tools</h4>
+                <a href="#" onclick="toggleJarvis(); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">🤖 Jarvis AI Buddy</a>
+                <a href="/audio-reader" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">🎧 Audio Reader</a>
+                <a href="#" onclick="document.getElementById('countdownWidgetCard').scrollIntoView({behavior: 'smooth'}); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">⏳ Exam Countdown</a>
+                <a href="#" onclick="toggleHamburgerDrawer(); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">⏱️ Today's Study Plan</a>
+            </div>
+            
+            <!-- Column 2: Tech & AI Branch -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <h4 style="color: var(--primary-blue); font-weight: bold; margin-bottom: 10px; font-size: 15px;">Tech & AI Branch</h4>
+                <a href="#" onclick="filterBySubject('Artificial Intelligence (AI)', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Artificial Intelligence (AI)</a>
+                <a href="#" onclick="filterBySubject('Cyber Security & Ethical Hacking', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Cyber Security</a>
+            </div>
+
+            <!-- Column 3: Core Academics -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <h4 style="color: var(--primary-blue); font-weight: bold; margin-bottom: 10px; font-size: 15px;">Core Academics</h4>
+                <a href="#" onclick="filterBySubject('Physics', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Physics</a>
+                <a href="#" onclick="filterBySubject('Chemistry', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Chemistry</a>
+                <a href="#" onclick="filterBySubject('Mathematics', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Mathematics</a>
+                <a href="#" onclick="filterBySubject('Biology', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Biology</a>
+            </div>
+
+            <!-- Column 4: Competitive - SSC/UPSC -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <h4 style="color: var(--primary-blue); font-weight: bold; margin-bottom: 10px; font-size: 15px;">Competitive Exams</h4>
+                <a href="#" onclick="filterBySubject('History', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">History</a>
+                <a href="#" onclick="filterBySubject('Geography', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Geography</a>
+                <a href="#" onclick="filterBySubject('Polity', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Polity</a>
+                <a href="#" onclick="filterBySubject('Economics', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Economics</a>
+                <a href="#" onclick="filterBySubject('Reasoning', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Reasoning</a>
+                <a href="#" onclick="filterBySubject('Aptitude', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Aptitude</a>
+            </div>
+
+            <!-- Column 5: Languages & Review -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <h4 style="color: var(--primary-blue); font-weight: bold; margin-bottom: 10px; font-size: 15px;">Languages & Review</h4>
+                <a href="#" onclick="filterBySubject('English', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">English</a>
+                <a href="#" onclick="filterBySubject('Hindi', this); return false;" style="color: var(--text-light); text-decoration: none; transition: color 0.2s;">Hindi</a>
+                <div style="margin-top: 15px;">
+                    <button id="openFeedbackBtn" style="background: linear-gradient(135deg, var(--primary-blue), #0284c7); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s;">Give Feedback 💬</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Bar -->
+        <div style="max-width: 1200px; margin: 20px auto 0; text-align: center; color: var(--text-light); font-size: 13px; line-height: 1.6;">
+            &copy; 2026 RankUp Hub. All Rights Reserved. Developed by Tushar Swami. 
+            Support: <a href="mailto:mr.tusharswami@gmail.com" style="color: var(--primary-blue); text-decoration: none;">mr.tusharswami@gmail.com</a> | 
+            Visit Counter: <span id="visitor-count" class="badge bg-dark">{{ visit_count }}</span>
+        </div>
+    </footer>
+
+    <!-- Upload Notes Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content upload-section">
+            <span class="close-modal">&times;</span>
+            <h3>Contribute & Upload Your Notes</h3>
+            <form id="studyMaterialForm">
+                <input type="text" id="noteTitle" name="title" placeholder="Note Title (e.g., Electrostatics)" required style="width: 100%; margin-bottom: 20px; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <select name="subject" id="uploadSubject" class="form-control" required style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+                     <option value="general" selected>General / Other</option>
+                     <option value="physics">Physics</option>
+                     <option value="chemistry">Chemistry</option>
+                     <option value="mathematics">Mathematics</option>
+                </select>
+                <textarea id="noteDescription" name="description" placeholder="Description / Smart Tags (e.g., #JEE_Advanced, #Short_Notes, Chapter 3)" rows="2" style="width: 100%; margin-bottom: 20px; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); font-family: inherit; resize: vertical;"></textarea>
+                <input type="file" id="fileInput" name="file" accept=".pdf" required style="margin-bottom: 20px;">
+                
+                <!-- Mandatory Legal Checkbox -->
+                <label class="checkbox-container">
+                    <input type="checkbox" id="copyrightCheck" name="copyrightCheck" required value="true">
+                    <span class="checkmark"></span>
+                    मैं यह प्रमाणित करता हूँ कि यह स्टडी मटेरियल मेरा अपना है। किसी भी प्रकार के कॉपीराइट उल्लंघन की पूरी ज़िम्मेदारी मेरी होगी।
+                </label>
+                
+                <button type="submit" class="btn-upload" style="width: 100%;">Upload Note securely</button>
+            </form>
+            <div id="uploadStatus"></div>
+        </div>
+    </div>
+
+    <!-- Out of Credits Modal -->
+    <div id="noCreditsModal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <span class="close-modal" id="closeNoCreditsModal">&times;</span>
+            <div style="font-size: 45px; margin-bottom: 10px;">🔒</div>
+            <h3 style="color: var(--red-warning); margin-bottom: 15px;">Points Exhausted!</h3>
+            <p style="margin-bottom: 25px; color: var(--text-dark); line-height: 1.6; font-weight: 500;">
+                डाउनलोड करने ke liye kam se kam 1 point chahiye! Kripya points kamane ke liye naye notes upload karein.
+            </p>
+            <button class="btn-upload" id="openUploadFromEmptyBtn" style="width: 100%;">Upload & Earn Points 🚀</button>
+        </div>
+    </div>
+
+    <!-- Interactive Feedback Modal -->
+    <div id="feedbackModal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);">
+        <div class="modal-content" style="background: var(--bg-gray); margin: 10% auto; padding: 30px; border: 1px solid var(--border-color); width: 90%; max-width: 500px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative;">
+            <span class="close-modal" id="closeFeedbackModal" style="position: absolute; top: 15px; right: 20px; font-size: 24px; font-weight: bold; color: var(--text-light); cursor: pointer;">&times;</span>
+            <h3 style="color: var(--primary-blue); margin-bottom: 20px; text-align: center;">Help Us Improve RankUp Hub! 🚀</h3>
+            <form id="feedbackForm">
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <label style="display: block; margin-bottom: 10px; color: var(--text-dark); font-weight: 600;">How would you rate your experience?</label>
+                    <div style="display: flex; justify-content: center; gap: 10px; font-size: 28px; cursor: pointer;" id="starRatingContainer">
+                        <span class="star" data-val="1" style="color: #ccc;">★</span>
+                        <span class="star" data-val="2" style="color: #ccc;">★</span>
+                        <span class="star" data-val="3" style="color: #ccc;">★</span>
+                        <span class="star" data-val="4" style="color: #ccc;">★</span>
+                        <span class="star" data-val="5" style="color: #ccc;">★</span>
+                    </div>
+                    <input type="hidden" id="feedbackRating" value="0">
+                </div>
+                <textarea id="feedbackMessage" rows="4" placeholder="Tell us what you love, or what we can do better..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); font-family: inherit; resize: vertical; margin-bottom: 20px; background: var(--white); color: var(--text-dark); box-sizing: border-box;" required></textarea>
+                <button type="submit" style="width: 100%; background: linear-gradient(135deg, var(--primary-blue), #0284c7); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s;">Submit Feedback Securely</button>
+            </form>
+            <div id="feedbackStatus" style="margin-top: 15px; text-align: center; font-weight: bold;"></div>
+        </div>
+    </div>
+
+    <!-- PDF.js via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // --- Subject Search & Dynamic Subject Loading ---
+        const ALL_SUBJECTS = [
+            "Physics", "Chemistry", "Mathematics", "Biology", 
+            "Cyber Security & Ethical Hacking", "Artificial Intelligence (AI)", 
+            "History", "Geography", "Polity", "Economics", 
+            "Reasoning", "Aptitude", "English", "Computer Science"
+        ];
+        
+        const uploadSubjectSelect = document.getElementById('uploadSubject');
+        if (uploadSubjectSelect) {
+            ALL_SUBJECTS.forEach(subject => {
+                const opt = document.createElement('option');
+                opt.value = subject;
+                opt.textContent = subject;
+                uploadSubjectSelect.appendChild(opt);
+            });
+        }
+
+        function toggleMoreSubjects() {
+            const collapsible = document.getElementById('collapsibleSubjects');
+            const btn = document.getElementById('toggleSubjectsBtn');
+            if (collapsible.style.display === 'none' || collapsible.style.display === '') {
+                collapsible.style.display = 'block';
+                btn.innerHTML = 'Show Less <span style="font-size: 10px;">∧</span>';
+            } else {
+                collapsible.style.display = 'none';
+                btn.innerHTML = 'Show More <span style="font-size: 10px;">∨</span>';
+            }
+        }
+
+        const subjectSearchInput = document.getElementById('subjectSearchInput');
+        if (subjectSearchInput) {
+            subjectSearchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const allItems = document.querySelectorAll('.subject-item');
+                const collapsible = document.getElementById('collapsibleSubjects');
+                const btn = document.getElementById('toggleSubjectsBtn');
+                
+                allItems.forEach(item => {
+                    const subjectName = item.getAttribute('data-subject').toLowerCase();
+                    if (subjectName.includes(query)) {
+                        item.style.display = 'list-item';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                if (query) {
+                    collapsible.style.display = 'block';
+                    btn.style.display = 'none';
+                } else {
+                    collapsible.style.display = 'none';
+                    btn.style.display = 'flex';
+                    btn.innerHTML = 'Show More <span style="font-size: 10px;">∨</span>';
+                }
+            });
+        }
+
+        // Search API Connection (Dynamic Search)
+        const searchInput = document.getElementById('searchInput');
+        const resDiv = document.getElementById('search-results');
+
+        // Shared function to render notes
+        function renderResults(data, container, emptyMessage) {
+            if (data.length > 0) {
+                let html = '<ul style="list-style:none; padding:0;">';
+                data.forEach(item => {
+                    const descHtml = item.description ? `<span style="font-size: 12px; color: var(--text-light); margin-top: 4px;">${item.description}</span>` : '';
+                    html += `<li style="padding: 14px 0; border-bottom: 1px solid var(--border-color); color: var(--text-dark); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
+                        <div style="display: flex; flex-direction: column; flex: 1; min-width: 0; word-break: break-word;">
+                            <span>📄 <strong>${item.title}</strong> <small style="color:var(--text-light); margin-left:8px;">[${item.subject || 'General'}]</small></span> 
+                            ${descHtml}
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end; justify-content: center; min-width: 90px; flex-shrink: 0;">
+                            <button onclick="togglePreview('${item.filename}', '${item.drive_link}')" style="background: var(--primary-blue); color: white; border: none; padding: 6px 0; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; width: 90px; text-align: center; white-space: nowrap; display: block;">Preview 👁️</button> 
+                            <button onclick="window.location.href='/view-pdf/${item.filename}'" style="background: #28a745; color: white; border: none; padding: 6px 0; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; width: 90px; text-align: center; white-space: nowrap; display: block;">पढ़ें 📖</button> 
+                        </div>
+                        <div id="preview-container-${item.filename}" style="display:none; width: 100%; margin-top: 10px; flex-direction: column; background: #f9f9f9; padding: 10px; border-radius: 8px;" oncontextmenu="return false;">
+                            <button onclick="closePreview('${item.filename}')" style="align-self: flex-end; margin-bottom: 10px; background:var(--red-warning); color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">Close Preview ❌</button>
+                        <div id="pdf-container-${item.filename}" style="width: 100%; height: 400px; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 0; box-sizing: border-box; border-radius: 8px; user-select: none; -webkit-user-select: none;"></div>
+                        </div>
+                    </li>`;
+                });
+                html += '</ul>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = `<p style="color: var(--text-light);">${emptyMessage}</p>`;
+            }
+            container.style.display = 'block';
+        }
+
+        // Fetch and Update Credits on UI
+        async function fetchCredits() {
+            try {
+                const res = await fetch('/api/credits');
+                const data = await res.json();
+                document.getElementById('creditDisplay').innerHTML = `🪙 ${data.credits} Pts`;
+            } catch (err) { console.error(err); }
+        }
+        fetchCredits(); // Execute on page load
+
+        // Handle PDF Download and Credit Deduction
+        async function downloadNote(filename) {
+            try { 
+                const response = await fetch('/download/' + filename);
+                
+                if (response.ok) {
+                    // Trigger file download dynamically via blob
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+
+                    fetchCredits(); // Refresh display
+                } else {
+                    const errorData = await response.json();
+                    if (errorData.message === "insufficient_credits") {
+                        document.getElementById('noCreditsModal').style.display = 'block';
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        // Dynamic Search by typing
+        searchInput.addEventListener('input', async (e) => {
+            const query = e.target.value.trim();
+            const hero = document.getElementById('premiumHero');
+            
+            if (!query) {
+                resetToHome();
+                return;
+            }
+            
+            if (hero) hero.style.display = 'none';
+            
+            try {
+                const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                renderResults(data, resDiv, 'No matching resources found.');
+            } catch (err) {
+                console.error("Search failed", err);
+            }
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim()) {
+                const hero = document.getElementById('premiumHero');
+                if (hero) hero.style.display = 'none';
+                resDiv.style.display = 'block';
+            }
+        });
+
+        function performSearch() {
+            // Manually trigger the event logic
+            searchInput.dispatchEvent(new Event('input'));
+        }
+
+        // Dynamic Filter by Subject in Sidebar
+        async function filterBySubject(subject, element) {
+            if (element) {
+                document.querySelectorAll('.subject-link').forEach(link => link.classList.remove('active'));
+                element.classList.add('active');
+            }
+
+            // Hide the hero container when browsing notes
+            const hero = document.getElementById('premiumHero');
+            if (hero) hero.style.display = 'none';
+
+            try {
+                const response = await fetch(`/search?subject=${encodeURIComponent(subject)}`);
+                const data = await response.json();
+                renderResults(data, resDiv, subject ? `No notes found for ${subject}.` : 'No notes available.');
+
+                // Automatically scroll down to the content container on mobile screens
+                if (window.innerWidth <= 768) {
+                    resDiv.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (err) {
+                console.error("Filter failed", err);
+            }
+        }
+
+        function toggleHamburgerDrawer() {
+            const drawer = document.getElementById('hamburgerDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+            if (drawer.classList.contains('active')) {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+            } else {
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            }
+        }
+
+        function togglePreview(filename, driveLink) {
+            const container = document.getElementById(`preview-container-${filename}`);
+            const pdfContainer = document.getElementById(`pdf-container-${filename}`);
+            if (container.style.display === 'none') {
+                container.style.display = 'flex';
+                
+                if (pdfContainer.innerHTML.trim() !== '') return;
+                
+                let fileId = '';
+                if (driveLink && driveLink.includes('/d/')) {
+                    fileId = driveLink.split('/d/')[1].split('/')[0];
+                } else if (driveLink && driveLink.includes('id=')) {
+                    fileId = driveLink.split('id=')[1].split('&')[0];
+                }
+                
+                if (fileId) {
+                    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                    pdfContainer.innerHTML = `
+                        <div style="position: relative; width: 100%; height: 100%;">
+                            <div style="position: absolute; top: 0; right: 0; width: 60px; height: 60px; z-index: 10; background: transparent;"></div>
+                            <iframe src="${embedUrl}" style="width: 100%; height: 100%; border: none;" allow="autoplay"></iframe>
+                        </div>
+                    `;
+                    // Ensure the container is styled properly to fit the iframe
+                    pdfContainer.style.padding = '0';
+                    pdfContainer.style.background = '#525659';
+                } else {
+                    pdfContainer.innerHTML = '<span style="color:red;">Failed to load secure preview. Invalid Drive Link.</span>';
+                }
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function closePreview(filename) {
+            const container = document.getElementById(`preview-container-${filename}`);
+            container.style.display = 'none';
+        }
+
+        // Modal Control Logic
+        const modal = document.getElementById("uploadModal");
+        const openModalBtn = document.getElementById("openUploadBtn");
+        const closeModalBtn = document.getElementsByClassName("close-modal")[0];
+        
+        const noCreditsModal = document.getElementById("noCreditsModal");
+        const closeNoCreditsModalBtn = document.getElementById("closeNoCreditsModal");
+        const openUploadFromEmptyBtn = document.getElementById("openUploadFromEmptyBtn");
+
+        openModalBtn.onclick = () => {
+            if (!window.auth || !window.auth.currentUser) {
+                const loginBtn = document.getElementById('googleLoginBtn');
+                if (loginBtn) loginBtn.click();
+                return;
+            }
+            modal.style.display = "block";
+        };
+        closeModalBtn.onclick = () => modal.style.display = "none";
+
+        closeNoCreditsModalBtn.onclick = () => noCreditsModal.style.display = "none";
+        openUploadFromEmptyBtn.onclick = () => {
+            noCreditsModal.style.display = "none";
+            if (!window.auth || !window.auth.currentUser) {
+                const loginBtn = document.getElementById('googleLoginBtn');
+                if (loginBtn) loginBtn.click();
+                return;
+            }
+            modal.style.display = "block";
+        };        
+        
+        // Feedback Modal Logic
+        const feedbackModal = document.getElementById("feedbackModal");
+        const openFeedbackBtn = document.getElementById("openFeedbackBtn");
+        const closeFeedbackModalBtn = document.getElementById("closeFeedbackModal");
+        const starContainer = document.getElementById("starRatingContainer");
+        const stars = starContainer ? starContainer.querySelectorAll(".star") : [];
+        const feedbackRatingInput = document.getElementById("feedbackRating");
+        const feedbackForm = document.getElementById("feedbackForm");
+        const feedbackStatus = document.getElementById("feedbackStatus");
+
+        if (openFeedbackBtn) {
+            openFeedbackBtn.onclick = (e) => {
+                e.preventDefault();
+                feedbackModal.style.display = "block";
+            };
+        }
+        
+        if (closeFeedbackModalBtn) {
+            closeFeedbackModalBtn.onclick = () => {
+                feedbackModal.style.display = "none";
+                feedbackStatus.innerHTML = '';
+            };
+        }
+
+        stars.forEach(star => {
+            star.onclick = function() {
+                const val = parseInt(this.getAttribute("data-val"));
+                feedbackRatingInput.value = val;
+                stars.forEach((s, index) => {
+                    if (index < val) {
+                        s.style.color = "#ffcc00"; // Active star color
+                    } else {
+                        s.style.color = "#ccc"; // Inactive star color
+                    }
+                });
+            };
+        });
+
+        if (feedbackForm) {
+            feedbackForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const rating = feedbackRatingInput.value;
+                const message = document.getElementById('feedbackMessage').value;
+                const email = (window.auth && window.auth.currentUser) ? window.auth.currentUser.email : "guest";
+
+                if (rating === "0") {
+                    feedbackStatus.innerHTML = `<span style="color:var(--red-warning);">Please select a rating.</span>`;
+                    return;
+                }
+
+                feedbackStatus.innerHTML = `<span style="color:var(--primary-blue);">Sending...</span>`;
+
+                try {
+                    const response = await fetch('/api/feedback', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rating, message, email })
+                    });
+                    const data = await response.json();
+                    
+                    if (response.ok && data.status === 'success') {
+                        feedbackStatus.innerHTML = `<span style="color:green;">${data.message}</span>`;
+                        setTimeout(() => {
+                            feedbackModal.style.display = "none";
+                            feedbackForm.reset();
+                            feedbackRatingInput.value = "0";
+                            stars.forEach(s => s.style.color = "#ccc");
+                            feedbackStatus.innerHTML = '';
+                        }, 2000);
+                    } else {
+                        feedbackStatus.innerHTML = `<span style="color:var(--red-warning);">Error: ${data.message || 'Submission failed.'}</span>`;
+                    }
+                } catch (err) {
+                    feedbackStatus.innerHTML = `<span style="color:var(--red-warning);">An error occurred. Please try again.</span>`;
+                }
+            });
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+            if (event.target == noCreditsModal) {
+                noCreditsModal.style.display = "none";
+            }
+            if (event.target == feedbackModal) {
+                feedbackModal.style.display = "none";
+                feedbackStatus.innerHTML = '';
+            }
+        }
+
+        // File Upload Form API Connection
+        document.getElementById('studyMaterialForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const consent = document.getElementById('copyrightCheck');
+            const title = document.getElementById('noteTitle').value;
+            const description = document.getElementById('noteDescription').value;
+            const status = document.getElementById('uploadStatus');
+
+            if (!consent.checked) {
+                status.innerHTML = `<span style="color:red;">कृपया कॉपीराइट नियमों से सहमत हों।</span>`;
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('copyrightCheck', 'true');
+            formData.append('title', title);
+            formData.append('description', description);
+
+            let idToken = "";
+            try {
+                if (!window.auth || !window.auth.currentUser) {
+                    throw new Error("User not logged in or auth not initialized");
+                }
+                idToken = await window.auth.currentUser.getIdToken(true);
+                formData.append("firebase_token", idToken);
+                formData.append("email", window.auth.currentUser.email);
+            } catch (authErr) {
+                const loginBtn = document.getElementById('googleLoginBtn');
+                if (loginBtn) loginBtn.click();
+                return;
+            }
+
+            status.innerHTML = `<div style="display: flex; align-items: center; gap: 10px; color: var(--primary-blue); font-weight: bold;"><div style="width: 18px; height: 18px; border: 3px solid rgba(10,102,194,0.3); border-radius: 50%; border-top-color: var(--primary-blue); animation: spin 1s linear infinite;"></div> Uploading securely to Drive...</div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>`;
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                // Handle 401 Unauthorized Block for secure uploads
+                if (response.status === 401) {
+                    const loginBtn = document.getElementById('googleLoginBtn');
+                    if (loginBtn) loginBtn.click();
+                    return;
+                }                
+                if (response.ok && data.status === 'success') {
+                    status.innerHTML = `<span style="color:green;">${data.message}</span>`;
+                    document.getElementById('studyMaterialForm').reset();
+                    fetchCredits(); // Update balance after successful upload
+                } else {
+                    status.innerHTML = `<span style="color:red;">${data.message}</span>`;
+                }
+            } catch (err) {
+                status.innerHTML = `<span style="color:red;">An error occurred during upload.</span>`;
+            }
+        });
+    </script>
+
+    <!-- Jarvis AI Prep Buddy Widget -->
+    <div class="jarvis-fab" onclick="toggleJarvis()">🤖</div>
+    <div class="jarvis-chat-widget" id="jarvisWidget">
+        <div class="jarvis-header">
+            <span>RankUp Hub AI (Jarvis)</span>
+            <span class="jarvis-close" onclick="toggleJarvis()">×</span>
+        </div>
+        <div class="jarvis-messages" id="jarvisMessages">
+            <div class="msg-bubble msg-bot">Hi! I'm Jarvis. What topic are we tackling today?</div>
+        </div>
+        <div class="jarvis-input-area">
+            <input type="text" id="jarvisInput" placeholder="Ask a doubt..." onkeypress="if(event.key === 'Enter') sendJarvisMessage()">
+            <button onclick="sendJarvisMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Profile Dropdown & Advanced Theme Manager Logic
+        function applyTheme(theme) {
+            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            
+            // Update Active Buttons
+            const btnLight = document.getElementById('themeBtnLight');
+            const btnDark = document.getElementById('themeBtnDark');
+            const btnSystem = document.getElementById('themeBtnSystem');
+            if (btnLight && btnDark && btnSystem) {
+                btnLight.style.background = theme === 'light' ? 'var(--primary-blue)' : 'transparent';
+                btnLight.style.color = theme === 'light' ? 'white' : 'var(--text-dark)';
+                btnDark.style.background = theme === 'dark' ? 'var(--primary-blue)' : 'transparent';
+                btnDark.style.color = theme === 'dark' ? 'white' : 'var(--text-dark)';
+                btnSystem.style.background = theme === 'system' ? 'var(--primary-blue)' : 'transparent';
+                btnSystem.style.color = theme === 'system' ? 'white' : 'var(--text-dark)';
+            }
+        }
+
+        function setTheme(theme, e) {
+            if (e) e.stopPropagation();
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
+        }
+
+        // Initialize Theme
+        const storedTheme = localStorage.getItem('theme') || 'system';
+        applyTheme(storedTheme);
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (localStorage.getItem('theme') === 'system') applyTheme('system');
+        });
+
+        // --- Exam Countdown Logic ---
+        let currentExamInterval;
+        function loadExamSettings() {
+            const savedName = localStorage.getItem('examName') || 'JEE 2027';
+            const savedDate = localStorage.getItem('examDate') || '2027-04-01';
+            document.getElementById('examNameDisplay').innerText = savedName;
+            document.getElementById('examNameInput').value = savedName;
+            document.getElementById('examDateInput').value = savedDate;
+            
+            const targetTime = new Date(savedDate + "T09:00:00").getTime();
+            
+            if (currentExamInterval) clearInterval(currentExamInterval);
+            currentExamInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetTime - now;
+                if (distance > 0) {
+                    document.getElementById("days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+                    document.getElementById("hours").innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                    document.getElementById("minutes").innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                } else {
+                    document.getElementById("days").innerText = "00";
+                    document.getElementById("hours").innerText = "00";
+                    document.getElementById("minutes").innerText = "00";
+                }
+            }, 1000);
+        }
+
+        function toggleExamEdit() {
+            const form = document.getElementById('examEditForm');
+            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function toggleCountdownMobile() {
+            if (window.innerWidth <= 768) {
+                const content = document.getElementById('countdownContentArea');
+                const icon = document.querySelector('.mobile-collapse-icon');
+                if (content.style.maxHeight === '0px' || content.style.maxHeight === '') {
+                    content.style.maxHeight = '500px';
+                    content.style.opacity = '1';
+                    content.style.marginTop = '15px';
+                    if (icon) icon.innerText = '▼';
+                } else {
+                    content.style.maxHeight = '0px';
+                    content.style.opacity = '0';
+                    content.style.marginTop = '0px';
+                    if (icon) icon.innerText = '▲';
+                }
+            }
+        }
+
+        function resetToHome(e) {
+            if (e) e.preventDefault();
+            const hero = document.getElementById('premiumHero');
+            if (hero) hero.style.display = 'block';
+            const resDiv = document.getElementById('search-results');
+            if (resDiv) {
+                resDiv.style.display = 'none';
+                resDiv.innerHTML = '';
+            }
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            
+            document.querySelectorAll('.subject-link').forEach(link => link.classList.remove('active'));
+            const allNotesLink = document.querySelector('.subject-link');
+            if (allNotesLink) allNotesLink.classList.add('active');
+        }
+
+        // Initialize mobile state for countdown
+        window.addEventListener('load', () => {
+            if (window.innerWidth <= 768) {
+                const content = document.getElementById('countdownContentArea');
+                content.style.maxHeight = '500px';
+                content.style.opacity = '1';
+            }
+            // Removed auto-fetching logic on load to default to Home Screen
+        });
+
+        function saveExamSettings() {
+            const name = document.getElementById('examNameInput').value.trim();
+            const date = document.getElementById('examDateInput').value;
+            if (name && date) {
+                localStorage.setItem('examName', name);
+                localStorage.setItem('examDate', date);
+                loadExamSettings();
+                toggleExamEdit();
+            }
+        }
+        loadExamSettings();
+
+        // --- Advanced Daily Targets Logic ---
+        function getTodayDateString() {
+            const d = new Date();
+            return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+        }
+
+        let savedTargetsData = JSON.parse(localStorage.getItem('advancedTargetsObj'));
+        let dailyTargets;
+        const todayDate = getTodayDateString();
+
+        if (savedTargetsData && savedTargetsData.date === todayDate && savedTargetsData.targets) {
+            dailyTargets = savedTargetsData.targets;
+            dailyTargets.forEach(t => {
+                if (t.isActive === undefined) t.isActive = false;
+            });
+        } else {
+            // Initialize fresh for today
+            dailyTargets = [
+                { id: 1, text: "Study / Read", remaining: 3 * 3600, checked: false, isActive: false },
+                { id: 2, text: "Solve / Write", remaining: 2 * 3600, checked: false, isActive: false },
+                { id: 3, text: "Revise", remaining: 1 * 3600, checked: false, isActive: false }
+            ];
+            saveAdvancedTargets();
+        }
+
+        function saveAdvancedTargets() {
+            localStorage.setItem('advancedTargetsObj', JSON.stringify({
+                date: getTodayDateString(),
+                targets: dailyTargets
+            }));
+        }
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function togglePlayPause(id) {
+            dailyTargets.forEach(t => {
+                if (t.id === id) {
+                    if (!t.checked && t.remaining > 0) {
+                        t.isActive = !t.isActive;
+                    }
+                } else {
+                    t.isActive = false; // Pause all others
+                }
+            });
+            saveAdvancedTargets();
+            renderTargets();
+        }
+
+        function renderTargets() {
+            const list = document.getElementById('daily-targets');
+            list.innerHTML = '';
+            dailyTargets.forEach(target => {
+                const li = document.createElement('li');
+                li.style.display = 'flex';
+                li.style.alignItems = 'flex-start';
+                li.style.gap = '12px';
+                li.style.marginBottom = '0';
+                li.style.padding = '15px 20px';
+                li.style.borderRadius = '0';
+                li.style.background = target.checked ? 'rgba(0,0,0,0.02)' : 'var(--white)';
+                li.style.border = 'none';
+                li.style.borderBottom = '1px solid var(--border-color)';
+                li.style.boxShadow = 'none';
+                li.style.transition = 'all 0.2s ease';
+                
+                const isDone = target.checked || target.remaining <= 0;
+                const textStyle = target.checked ? 'text-decoration: line-through; opacity: 0.5;' : '';
+                const timeColor = target.checked ? 'var(--text-light)' : (target.remaining <= 0 ? 'var(--red-warning)' : 'var(--primary-blue)');
+                const timerBg = target.checked ? 'transparent' : 'var(--bg-gray)';
+
+                li.innerHTML = `
+                    <div style="flex-shrink: 0; display: flex; align-items: flex-start; justify-content: center; margin-top: 2px;">
+                        <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; margin: 0; accent-color: var(--primary-blue);" ${target.checked ? 'checked' : ''} onchange="toggleTarget(${target.id}, this.checked)">
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; gap: 8px;">
+                        <span style="font-weight: 700; font-size: 14px; color: var(--text-dark); transition: all 0.2s; ${textStyle}; white-space: normal; word-break: break-word;">${target.text}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; background: ${timerBg}; padding: 4px 10px; border-radius: 20px; transition: all 0.2s; align-self: flex-start;">
+                            <button onclick="togglePlayPause(${target.id})" style="background:none; border:none; cursor:pointer; font-size: 14px; padding: 0; margin-right: 4px; display: flex; align-items: center; justify-content: center; transition: transform 0.1s;" ${target.checked || target.remaining <= 0 ? 'disabled style="opacity:0.5;cursor:default;"' : ''}>
+                                ${target.isActive && !target.checked && target.remaining > 0 ? '⏸️' : '▶️'}
+                            </button>
+                            <span style="font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; color: ${timeColor}; letter-spacing: 0.5px; width: 65px; text-align: center;">
+                                ${formatTime(target.remaining)}
+                            </span>
+                        </div>
+                    </div>
+                    <button onclick="deleteTarget(${target.id})" style="background:none; border:none; cursor:pointer; color: var(--text-light); font-size: 18px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0;" onmouseover="this.style.background='rgba(255,0,0,0.1)'; this.style.color='var(--red-warning)'" onmouseout="this.style.background='none'; this.style.color='var(--text-light)'" title="Remove Target">×</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function toggleTarget(id, isChecked) {
+            const t = dailyTargets.find(t => t.id === id);
+            if (t) {
+                t.checked = isChecked;
+                if (isChecked) t.isActive = false;
+                saveAdvancedTargets();
+                renderTargets();
+            }
+        }
+
+        function deleteTarget(id) {
+            dailyTargets = dailyTargets.filter(t => t.id !== id);
+            saveAdvancedTargets();
+            renderTargets();
+        }
+
+        function addNewTarget() {
+            const nameInput = document.getElementById('newTaskName');
+            const hrsInput = document.getElementById('newTaskHours');
+            const name = nameInput.value.trim();
+            const hrs = parseFloat(hrsInput.value);
+            
+            if (name && hrs > 0) {
+                dailyTargets.push({
+                    id: Date.now(),
+                    text: name,
+                    remaining: Math.floor(hrs * 3600),
+                    checked: false,
+                    isActive: false
+                });
+                nameInput.value = '';
+                hrsInput.value = '';
+                saveAdvancedTargets();
+                renderTargets();
+            }
+        }
+
+        // Target Timer Loop
+        setInterval(() => {
+            let changed = false;
+            dailyTargets.forEach(t => {
+                if (!t.checked && t.remaining > 0 && t.isActive) {
+                    t.remaining--;
+                    changed = true;
+                    if (t.remaining <= 0) t.isActive = false;
+                }
+            });
+            if (changed) {
+                renderTargets();
+                // Optionally throttle save to reduce IO
+                if (new Date().getSeconds() % 5 === 0) saveAdvancedTargets();
+            }
+        }, 1000);
+
+        renderTargets();
+
+        // Jarvis Logic
+        function toggleJarvis() {
+            const w = document.getElementById('jarvisWidget');
+            w.style.display = (w.style.display === 'flex') ? 'none' : 'flex';
+        }
+        async function sendJarvisMessage() {
+            const input = document.getElementById('jarvisInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            
+            const msgsDiv = document.getElementById('jarvisMessages');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg-bubble msg-user';
+            userMsg.textContent = msg;
+            msgsDiv.appendChild(userMsg);
+            
+            input.value = '';
+            msgsDiv.scrollTop = msgsDiv.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                const botMsg = document.createElement('div');
+                botMsg.className = 'msg-bubble msg-bot';
+                botMsg.textContent = data.reply;
+                msgsDiv.appendChild(botMsg);
+                msgsDiv.scrollTop = msgsDiv.scrollHeight;
+            } catch (e) {
+                const botMsg = document.createElement('div');
+                botMsg.className = 'msg-bubble msg-bot';
+                botMsg.style.color = 'var(--red-warning)';
+                botMsg.textContent = 'Offline.';
+                msgsDiv.appendChild(botMsg);
+                msgsDiv.scrollTop = msgsDiv.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TopperNotes - Smart Audio Reader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            padding: 20px;
+        }
+        .audio-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #0A66C2;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+    #textReaderDisplay {
+        display: none;
+        width: 100%;
+        height: 400px;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        background: white;
+    }
+    .speech-segment {
+        cursor: pointer;
+        transition: background 0.2s, border-left 0.2s;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        line-height: 1.6;
+        border-left: 4px solid transparent;
+    }
+    .speech-segment:hover {
+        background: #f0f8ff;
+    }
+    .speech-segment.active {
+        background: #e3f2fd;
+        border-left: 4px solid #0A66C2;
+    }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+    .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        background-color: #0A66C2;
+        color: white;
+        }
+    .btn:hover { opacity: 0.9; }
+    #playPauseBtn { background-color: #28a745; color: white; }
+    #editBtn { background-color: #6c757d; color: white; }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        input[type=range] { width: 200px; }
+    </style>
+</head>
+<body>
+    <div class="audio-container">
+        <a href="/" style="display: inline-block; margin-bottom: 20px; text-decoration: none; color: #0A66C2; font-weight: bold;">← Back to Home</a>
+        <h1>TopperNotes Smart Audio Reader 🎧</h1>
+        <textarea id="textToRead" placeholder="Paste entire book chapters or paragraphs here, then click Play..."></textarea>
+        <div id="textReaderDisplay"></div>
+        
+        <div style="margin-bottom: 25px; text-align: center;">
+            <p style="margin-bottom: 10px; font-size: 16px;"><strong>OR Upload a PDF Book to Listen 📂</strong></p>
+            <input type="file" id="audioPdfInput" accept=".pdf" style="margin-bottom: 10px;">
+            <button class="btn" id="extractPdfBtn" style="background-color: #17a2b8; color: white;">Extract & Speak 🎙️</button>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="playPauseBtn">▶️ Play</button>
+            <button class="btn" id="editBtn" style="display: none;">✏️ Edit Text</button>
+        </div>
+
+        <div class="speed-control">
+            <label for="speedRange">Speech Speed:</label>
+            <input type="range" id="speedRange" min="0.5" max="8.0" step="0.1" value="1.0">
+            <span id="speedValue">1.0x</span>
+        </div>
+    </div>
+
+    <!-- Professional Footer Credit -->
+    <footer style="background-color: #1F1F1F; color: white; text-align: center; padding: 25px 20px; margin-top: 40px; font-size: 14px;">
+        <p style="margin: 0;">&copy; 2026 RankUp Hub. All Rights Reserved. Developed by Tushar Swami. For support, contact: mr.tusharswami@gmail.com</p>
+    </footer>
+
+    <script>
+        const textToRead = document.getElementById('textToRead');
+        const textReaderDisplay = document.getElementById('textReaderDisplay');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const editBtn = document.getElementById('editBtn');
+        const speedRange = document.getElementById('speedRange');
+        const speedValue = document.getElementById('speedValue');
+        const audioPdfInput = document.getElementById('audioPdfInput');
+        const extractPdfBtn = document.getElementById('extractPdfBtn');
+
+        let synth = window.speechSynthesis;
+        let utterance = new SpeechSynthesisUtterance();
+        let segments = [];
+        let currentSegmentIndex = 0;
+        let isManuallyPaused = false;
+        let isCanceled = false;
+        let preferredVoice = null;
+
+        // Load Indian Voices
+        function initVoices() {
+            const voices = synth.getVoices();
+            if (!voices.length) return;
+            preferredVoice = voices.find(v => 
+                v.lang.includes('hi-IN') || 
+                v.lang.includes('en-IN') || 
+                v.name.includes('Google हिन्दी') || 
+                v.name.includes('Hemant') || 
+                v.name.includes('Kalpana') || 
+                v.name.includes('Rishi')
+            ) || voices[0];
+        }
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = initVoices;
+        }
+        initVoices();
+
+        // PDF Extraction and Text-to-Speech Logic
+        extractPdfBtn.addEventListener('click', async () => {
+            const file = audioPdfInput.files[0];
+            if (!file) {
+                alert("Please select a PDF file first.");
+                return;
+            }
+            
+            extractPdfBtn.textContent = "Extracting... ⏳";
+            extractPdfBtn.disabled = true;
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/extract-text-from-upload', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    textToRead.value = data.text;
+                    playPauseBtn.click(); // Automatically trigger reading
+                } else {
+                    alert("Extraction failed: " + data.message);
+                }
+            } catch (err) {
+                alert("An error occurred during extraction.");
+            } finally {
+                extractPdfBtn.textContent = "Extract & Speak 🎙️";
+                extractPdfBtn.disabled = false;
+            }
+        });
+
+        // Live Speed Output Updater
+        speedRange.addEventListener('input', () => {
+            speedValue.textContent = parseFloat(speedRange.value).toFixed(1) + 'x';
+            utterance.rate = parseFloat(speedRange.value); // Real-time reading speed adjustment
+        });
+
+        // Play Logic
+        playBtn.addEventListener('click', () => {
+            if (synth.paused && synth.speaking) {
+                synth.resume();
+            } else {
+                synth.cancel(); // Stop whatever is currently playing
+                if (textToRead.value.trim() === '') return;
+                
+                utterance.text = textToRead.value;
+                utterance.rate = parseFloat(speedRange.value);
+                synth.speak(utterance);
+            }
+        });
+
+        // Pause Logic
+        pauseBtn.addEventListener('click', () => {
+            if (synth.speaking && !synth.paused) {
+                synth.pause();
+            }
+        });
+
+        // Stop Logic
+        stopBtn.addEventListener('click', () => {
+            synth.cancel();
+        });
+    </script>
+</body>
+</html>
